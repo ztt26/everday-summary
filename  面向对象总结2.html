@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+.active{
+	background: yellow;
+}	
+#box div{
+	width:200px;
+	height: 200px;
+	border: 1px solid #000;
+	display: none;
+}
+#box div.show{
+	display: block;
+}
+</style>
+</head>
+<body>
+	<div id="box">
+		<input type="button" value="按钮一" class="active" />
+		<input type="button" value="按钮二" />
+		<input type="button" value="按钮三" />
+		<div class="show">第一块内容</div>
+		<div>第二块内容</div>
+		<div>第三块内容</div>
+	</div>
+<script type="text/javascript">
+	知识点总结:
+	一.this:
+			函数名+() window
+			setTimeout window
+			div.onclick div
+			new Fn  Fn{}
+	二.继承
+		1.js面向对象的三大特征:
+			抽象
+			封装
+			继承:有一套自己的特征还具备父类的特征.
+		2.继承:拷贝继承
+		       类式继承(性能最高)
+	三.拷贝继承:
+		1.属性继承:调用父类并且改变this指向(call)
+		2.方法继承:遍历父类的原型,把每个方法都赋值给子类.
+		注意:不能直接把父类的原型下的方法直接赋值给子类,因为原型的值为对象类型,而对象类型的赋值为赋址,改变子类会影响父类.
+	四. 1.对象的赋值为赋址(改变一个会影响另一个).
+		2.简单类型的赋值就是赋值(改变一个不会影响另一个).
+	五. 1.非空对象下才可以加属性和方法
+	六. 包装对象:
+		1.当简单类型去调用固定的属性和方法的时候,那么系统内部会偷偷地把这个简单类型转成对象类型去调用属性或者方法,调用结束之后这个包装对象自动销毁.
+		2.注意:简单类型内置对象中的属性只能读不能写.
+	七.instanceof:
+		运算符:
+			左值(对象)是不是右值(构造函数)构造出来的
+	eg1://面向对象的选项卡
+	function Tab(id){
+		this.box=document.getElementById(id)
+		this.btns = box.getElementsByTagName('input');
+		this.divs = box.getElementsByTagName('div');
+		this.btn = this.btns[0];
+	}
+	
+	Tab.prototype.Event = function(){		
+		
+		var _this = this;
+		
+		for(var i=0;i<this.btns.length;i++){
+			this.btns[i].index = i;
+			this.btns[i].onclick = function(){
+				_this.change(this);
+			}
+		}
+		
+	}
+	
+	Tab.prototype.change = function(that){
+		
+		this.btn.className = this.divs[this.btn.index].className = '';
+		
+		that.className = 'active';
+		this.divs[that.index].className = 'show';
+		
+		this.btn = that;
+		
+	}
+
+	var box = document.getElementById('box');
+	var t = new Tab(box);
+	t.Event();
+eg2://面向对象的拖拽
+<div id="box"></div>
+js:
+function Drag(id){
+	this.box=document.getElementById(id);
+	this.disX=0;
+	this.disY=0;
+	this.init();
+}
+Drag.prototype.init=function(){
+	var This=this
+	this.box.onmousedown=function(ev){
+		This.down(ev);
+		document.onmousemove=function(ev){
+			This.move(ev);
+		}
+		document.onmouseup=function(ev){
+			This.up(ev);
+		}
+	}
+}
+Drag.prototype.down=function(ev){
+	this.disX=ev.clientX-this.box.offsetLeft;
+	this.disY=ev.clientY-this.box.offsetTop;
+}
+Drag.prototype.move=function(ev){
+	this.box.style.left=this.l+'px';
+	this.box.style.top=this.t+'px';
+	this l=ev.clientX-this.disX;
+	this t=ev.clientX-this.disX;
+}
+Drag.prototype.move=function(ev){
+	document.onmouseup=document.onmousemove=null;
+}
+Drag.prototype.lim=function(){
+	if(this.l<0){
+		this.l=0;
+	}else if(this.l>window.innerWidth-this.box.offsetWidth){
+		this.l=window.innerWidth-this.box.offsetWidth;
+	}
+	if(this.t<0){
+		this.t=0;
+	}else if(this.t>window.innerHeight-this.box.offsetHeight){
+		this.t=window.innerHeight-this.box.offsetHeight;
+	}
+}
+var d=new Drag('box');
+d.init();
+eg3://面向对象选项卡扩展
+	html:<div id="box">
+		<input type="button" value="按钮一" class="active" />
+		<input type="button" value="按钮二" />
+		<input type="button" value="按钮三" />
+		<div class="show">第一块内容</div>
+		<div>第二块内容</div>
+		<div>第三块内容</div>
+	</div>
+	
+	<div id="box2">
+		<input type="button" value="按钮一" class="active" />
+		<input type="button" value="按钮二" />
+		<input type="button" value="按钮三" />
+		<div class="show">第一块内容</div>
+		<div>第二块内容</div>
+		<div>第三块内容</div>
+	</div>
+	<input type="button" value="点击的时候让第一个停" id="btn1"/>
+	<input type="button" value="点击的时候让第二个开始轮播" id="btn2"/>
+	<input type="button" value="点击的时候让第一个开始轮播第二个停" id="btn3"/>
+	<input type="button" value="点击的时候如果轮播就停如果停就轮播" id="btn4"/>
+js:
+	function Tab(id){
+		this.box=document.getElementById(id);
+		this.inpus=this.box.getElementsByTagName('input');
+		this.divs=this.box.getElementsByTagName('div');
+		this.timer=null;
+		this.num=0;
+	}
+	//点击事件
+	Tab.prototype.Event=function(){
+		var This=this;
+		for(var i=0;i<this.inpus.length;i++){
+			this.inpus[i].index=i;
+			this.inpus[i].onclick=function(){
+				This.change(this);
+				This.num=this.index;
+			}
+		}
+	}
+	//切换
+	Tab.prototype.change=function(){
+		for(var i=0;i<this.inpus[i].length;i++){
+			this.inpus[i].className=this.divs[i].className='';
+		}
+		this.inpus[num%=this.inpus.length].className='active';
+		this.divs[num%=this.inpus.length].className='show';
+	}
+	//自动播放
+	Tab.prototype.autoPlay=function(){
+		var This=this;
+		this.timer=setInterval(function(){
+			This.change();
+			This.num++;
+		},1000);
+	}
+	//播放停止
+	Tab.prototype.stop=function(){
+		clearInterval(this.timer);
+		this.timer=null;
+	}
+	//是否为轮播状态
+	Tab.prototype.isAutoPlay=function(){
+		return this.timer;
+	}
+	var t1=new tab('box');
+	var t2=new Tab('box2');
+	var btn1=document.getElementById('btn1');
+	var btn2=document.getElementById('btn2');
+	var btn3=document.getElementById('btn3');
+	var btn4=document.getElementById('btn4');
+	t1.Event();
+	t1.autoPlay();
+	btn1.onclick=function(){
+		t1.stop();
+	}
+	btn2.onclick=function(){
+		if(!t2.isAutoPlay()){
+			t2.autoPlay();
+		}
+	}
+	btn3.onclick=function(){
+		t2.stop();
+		if(!t1.isAutoPlay()){
+			t1.autoPlay();
+		}
+	}
+	btn4.onclick=function(){
+		if(t1.isAutoPlay()){
+			t1.stop();
+		}else{
+			t1.autoPlay();
+		}
+		if(t2.isAutoPlay()){
+			t2.stop();
+		}else{
+			t2.autoPlay();
+		}
+	}
+eg4://面向对象拖拽
+function Drag(id){
+		
+		//console.log(this);
+		
+		this.disX = 0;
+		this.disY = 0;
+		this.l = 0;
+		this.t = 0;
+		this.box = document.getElementById(id);
+		this.init();
+	}
+	
+	//初始化
+	Drag.prototype.init = function(){
+		var _this = this;
+		this.box.onmousedown = function(ev){
+			_this.down(ev);
+
+			return false;
+		}
+	}
+	
+	Drag.prototype.down = function(ev){
+		
+		var _this = this;
+		this.disX = ev.clientX - this.box.offsetLeft;
+		this.disY = ev.clientY - this.box.offsetTop;
+		
+		
+		document.onmousemove = function(ev){
+			_this.move(ev);
+		}
+		
+		document.onmouseup = function(ev){
+			_this.up(ev);
+		}
+	}
+	
+	Drag.prototype.move = function(ev){
+		
+		this.l = ev.clientX - this.disX;
+		
+		this.t = ev.clientY - this.disY;
+
+		this.box.style.left = this.l + 'px';
+		
+		this.box.style.top = this.t  + 'px';
+	}
+	
+	Drag.prototype.up = function(ev){
+		document.onmousemove = document.onmouseup = null;
+	}
+function Drag2(id){
+	Drag.call(this,id);//?
+}
+for(var attr in Drag.prototype){
+	Drag2.prototype[attr]=Drag.prototype[attr];
+}
+Drag2.prototype.move=function(ev){
+	this.l=ev.clientX-this.disX;
+	this.t=ev.clientY-this.disY;
+	if(this.l<0){
+		this.l=0;
+	}else if(this.l>window.innerWidth-this.box.offsetWidth){
+		this.l=window.innerWidth-this.box.offsetWidth;
+	}
+	if(this.t<0){
+		this.t=0;
+	}else if(this.t>window.innerHeight-this.box.offsetHeight){
+		this.t=window.innerHeight-this.box.offsetHeight;
+	}
+	this.box.style.left = this.l + 'px';
+	this.box.style.top = this.t  + 'px';
+}
+
+</script>
+</body>
+</html>
